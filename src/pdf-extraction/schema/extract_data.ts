@@ -5,6 +5,9 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 export class ExtractDataModel extends Document {
 
   @Prop()
+  email: string;
+  
+  @Prop()
   data: string;
 
   @Prop({ type: Date, default: Date.now })

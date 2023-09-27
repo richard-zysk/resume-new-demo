@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as pdf from 'pdf-parse';
 import * as AWS from 'aws-sdk';
 import OpenAI from "openai";
@@ -49,10 +49,16 @@ export class PdfExtractionService {
   async extractTextFromPdf(buffer: Buffer): Promise<any> {
     const data = await pdf(buffer);
     const resumeText = data.text;
+     // Extract email using a regular expression
+     const emailRegex = /[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}/;
+     const emailMatch = resumeText.match(emailRegex);
+     const email = emailMatch ? emailMatch[0] : null;
+
     // const extractedData = await this.gptReview(resumeText);
 
 const store = new this.extractDataModel({
 
+  email: email,
   data: resumeText,
   createdAt: new Date(),
   deletedAt: null,
@@ -63,16 +69,15 @@ const result = await store.save();
 
 return result;
 
-    // return this.gptReview(resumeText);
   }
 
   // private async gptReview(resumeText: string): Promise<any> {
-    async gptReview(): Promise<any> {
-      const feedGpt = await this.extractDataModel.findOne();
+    async gptReview(email:string): Promise<any> {
+      const feedGpt = await this.extractDataModel.findOne({email:email});
   
-      // if (!feedGpt) {
-      //     throw new NotFoundException('No resume data found.');
-      // }
+      if (!feedGpt) {
+          throw new NotFoundException('No resume data found.');
+      }
   
       const resumeText = feedGpt.data;
   

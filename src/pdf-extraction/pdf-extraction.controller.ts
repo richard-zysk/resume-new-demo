@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
@@ -43,19 +44,19 @@ async extractText(@UploadedFile() file): Promise<string> {
   return this.pdfExtractionService.extractTextFromPdf(file.buffer);
 }
 
-//   @Post('extract-texts')
-//   @UseInterceptors(FilesInterceptor('files'))
-//   async extractTexts(
-//     @UploadedFiles() files,
-//   ): Promise<{ filename: string; text: string }[]> {
-//     const extractedData = await Promise.all(
-//       files.map(async (file) => ({
-//         filename: file.originalname,
-//         text: await this.pdfExtractionService.extractTextFromPdf(file.buffer),
-//       })),
-//     );
-//     return extractedData;
-//   }
+  @Post('extract-texts')
+  @UseInterceptors(FilesInterceptor('files'))
+  async extractTexts(
+    @UploadedFiles() files,
+  ): Promise<{ filename: string; text: string }[]> {
+    const extractedData = await Promise.all(
+      files.map(async (file) => ({
+        filename: file.originalname,
+        text: await this.pdfExtractionService.extractTextFromPdf(file.buffer),
+      })),
+    );
+    return extractedData;
+  }
 
 @Post('extract-text-name')
 @UseInterceptors(FileInterceptor('file'))
@@ -81,9 +82,9 @@ async extractTextAndRespond(@UploadedFile() file): Promise<{ name: string; skill
 
 
 @Get('test-response')
-async testResponse(): Promise<any> {
+async testResponse(@Query('email')email:string): Promise<any> {
 
-  return  await this.pdfExtractionService.gptReview();
+  return  await this.pdfExtractionService.gptReview(email);
 
 }
 
