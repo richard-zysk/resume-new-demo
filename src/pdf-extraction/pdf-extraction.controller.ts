@@ -81,13 +81,20 @@ async extractTextAndRespond(@UploadedFile() file): Promise<{ name: string; skill
 }
 
 
-@Get('test-response')
+@Post('evaluate-response')
 async testResponse(@Query('email')email:string): Promise<any> {
+console.log(email);
 
   return  await this.pdfExtractionService.gptReview(email);
 
 }
 
+// @Post('generate-score')
+// async generateScore(): Promise<any> {
+
+//   return  await this.pdfExtractionService.gptReview();
+
+// }
 
 
 @Get('test-my-api')
