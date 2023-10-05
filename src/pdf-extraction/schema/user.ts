@@ -12,14 +12,17 @@ export class User extends Document {
   @Prop()
   phone:string;
 
- @Prop()
- gender:string;
+  @Prop()
+  place:string;
 
   @Prop()
-  skills: string;
+  skills: Array<string>;
 
   @Prop()
   score:string;
+
+  @Prop()
+  suitable_role:string;
 
   @Prop({ type: MongooseSchema.Types.Mixed })
   data: object;

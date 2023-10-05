@@ -77,7 +77,7 @@ return result;
 
 
   async gptReview(email: string): Promise<any> {
-    // try {
+    try {
         const data = await this.extractDataModel.findOne({ email: email });
 
         const resumeText = data.data;
@@ -85,7 +85,7 @@ return result;
         const messages: Message[] = [
             {
                 role: "system",
-                content: "You are a sophisticated AI capable of evaluating resumes. Please review the given resume thoroughly, consider skills, work experience, projects, and other relevant factors, and provide a score out of 100. Additionally, extract key details like name, email, phone number, place, and the most suitable role for the candidate. Provide the information in a structured JSON format.",
+                content: "You are a sophisticated AI capable of evaluating resumes. Please review the given resume thoroughly, consider skills, work experience, projects, and other relevant factors, and provide a score out of 100. Additionally, extract key details like name, email, phone number, place, skills and the most suitable role for the candidate. Provide the information in a structured JSON format.",
             },
             {
                 role: "user",
@@ -107,27 +107,34 @@ return result;
 
         console.log("------------------>", assistantResponse);
         
-    // } catch (error) {
-    //     console.error("An error occurred while reviewing the resume:", error);
-    //     // You can also throw the error or handle it differently if required.
-    // }
+const saveResponse = await this.storeGptResponseInDb(assistantResponse);
+
+        return saveResponse;
+
+    } catch (error) {
+        console.error("An error occurred while reviewing the resume:", error);
+        // You can also throw the error or handle it differently if required.
+    }
 }
 
   
 
 
 
-  async storeGptResponseInDb(response: any): Promise<any> {
+  async storeGptResponseInDb(assistantResponse): Promise<any> {
     // Parse and structure the GPT response
-    const data = JSON.parse(response);
+    const data = JSON.parse(assistantResponse);
+console.log(data);
 
     // Use the userModel to save the data in MongoDB
     const saveInDb = new this.userModel({
         name: data.name,
         email: data.email,
         phone: data.phone,
+        place: data.place,
         skills: data.skills,
         score: data.score,
+        suitable_role: data.suitable_role,
         data: data,
     });
 
@@ -136,11 +143,32 @@ return result;
 }
     
 
+  async fetchEmails() {
+
+    try {
+      const emails = await this.extractDataModel.find({},'email')
+      return emails
+    } catch (error) {
+      return error
+    }
+
+      }
+
+
   async testMyApi() {
-    console.log("------------------------------",process.env.MONGODB_URI);
-    console.log(process.env.OPENAI_API_KEY);
-    
-    
     return 'Hello World! from resumer ai';
   }
+
+
+async signUp(body) {
+
+  try {
+    
+    
+  } catch (error) {
+    return error
+  }
+
+}
+
 }

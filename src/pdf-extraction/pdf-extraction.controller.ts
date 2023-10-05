@@ -1,5 +1,6 @@
 // pdf.controller.ts
 import {
+  Body,
   Controller,
   Get,
   Post,
@@ -44,11 +45,18 @@ async extractText(@UploadedFile() file): Promise<string> {
   return this.pdfExtractionService.extractTextFromPdf(file.buffer);
 }
 
+
+
+//! Using this Apis
   @Post('extract-texts')
   @UseInterceptors(FilesInterceptor('files'))
   async extractTexts(
     @UploadedFiles() files,
   ): Promise<{ filename: string; text: string }[]> {
+
+    
+    // console.log(files);
+    
     const extractedData = await Promise.all(
       files.map(async (file) => ({
         filename: file.originalname,
@@ -81,6 +89,7 @@ async extractTextAndRespond(@UploadedFile() file): Promise<{ name: string; skill
 }
 
 
+//! final apis
 @Post('evaluate-response')
 async testResponse(@Query('email')email:string): Promise<any> {
 console.log(email);
@@ -97,7 +106,17 @@ console.log(email);
 // }
 
 
-@Get('test-my-api')
+
+//!-send this apis
+@Get('fetch-emails')
+async fetchEmails(): Promise<any> {
+  
+    return  await this.pdfExtractionService.fetchEmails();
+  
+}
+
+
+@Get('health-check')
 async testMyApi(): Promise<any> {
   
     return  await this.pdfExtractionService.testMyApi();
@@ -106,6 +125,12 @@ async testMyApi(): Promise<any> {
 
 
 
+
+@Post('sign-up')
+  async signUp(@Body() body: any): Promise<any> {
+    return await this.pdfExtractionService.signUp(body);
+  
+}
 
 
 
