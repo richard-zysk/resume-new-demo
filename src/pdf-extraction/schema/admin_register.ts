@@ -4,8 +4,20 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 @Schema()
 export class AdminModel extends Document {
 
+
+  @Prop()
+  firstName:string
+
+@Prop()
+lastName:string
   @Prop()
   email: string;
+
+  @Prop()
+  password:string;
+
+
+
   
 
 
@@ -18,4 +30,4 @@ export class AdminModel extends Document {
   deletedAt: Date | null;
 }
 
-export const ExtractDataSchema = SchemaFactory.createForClass(AdminModel);
+export const AdminModelSchema = SchemaFactory.createForClass(AdminModel);

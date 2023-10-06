@@ -1,6 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
+export enum UserStatus {
+
+    New = "New",
+    InProgress = "InProgress",
+    Shortlisted = "Shortlisted",
+    OnHold = "OnHold",
+    Selected = "Selected",
+    Rejected = "Rejected",
+    InterviewScheduled = "InterviewScheduled"
+}
+
 @Schema()
 export class User extends Document {
   @Prop()
@@ -10,19 +21,29 @@ export class User extends Document {
   email: string;
 
   @Prop()
-  phone:string;
+  phone: string;
 
   @Prop()
-  place:string;
+  place: string;
 
   @Prop()
   skills: Array<string>;
 
   @Prop()
-  score:string;
+  score: string;
 
   @Prop()
-  suitable_role:string;
+  suitable_role: string;
+
+  @Prop({ type: String, enum: UserStatus, default: UserStatus.New })
+  status: UserStatus;
+
+  @Prop({default:null})
+  comments: string;
+
+
+  @Prop({type:Object,default:null})
+  wordCloud:any;
 
   @Prop({ type: MongooseSchema.Types.Mixed })
   data: object;

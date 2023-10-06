@@ -10,6 +10,9 @@ export class ExtractDataModel extends Document {
   @Prop()
   data: string;
 
+  @Prop()
+  s3Url:string;
+
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 

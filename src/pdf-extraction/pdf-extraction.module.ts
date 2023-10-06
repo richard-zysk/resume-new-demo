@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schema/user';
 import { ExtractDataModel, ExtractDataSchema } from './schema/extract_data';
 import { ConfigModule } from '@nestjs/config';
+import { AdminModel, AdminModelSchema } from './schema/admin_register';
 
 @Module({
   // imports: [ MongooseModule.forRoot(process.env.MONGODB_URI),
@@ -14,7 +15,8 @@ import { ConfigModule } from '@nestjs/config';
 
     MongooseModule.forFeature([
 { name: User.name, schema: UserSchema },
-{ name: ExtractDataModel.name, schema: ExtractDataSchema}
+{ name: ExtractDataModel.name, schema: ExtractDataSchema},
+{name:AdminModel.name,schema:AdminModelSchema}
    
     ]),],
   controllers: [PdfController],

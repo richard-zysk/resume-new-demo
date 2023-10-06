@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Query,
@@ -9,88 +10,99 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
+import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PdfExtractionService } from './pdf-extraction.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import * as AWS from 'aws-sdk';
 
 @Controller('pdf')
 export class PdfController {
-  constructor(private readonly pdfExtractionService: PdfExtractionService) {}
+  private s3: AWS.S3;
 
-//   @Post('extract-texts')
-//   @UseInterceptors(FilesInterceptor('files'))
-//   async extractTexts(
-//     @UploadedFiles() files,
-//   ): Promise<{ filename: string; text: string; s3Url: string }[]> {
-//     const extractedData = await Promise.all(
-//       files.map(async (file) => {
-//         const result = await this.pdfExtractionService.extractAndUploadToS3(
-//           file.buffer,
-//           file.originalname,
-//         );
-//         return {
-//           filename: file.originalname,
-//           text: result.text,
-//           s3Url: result.s3Url,
-//         };
-//       }),
-//     );
-//     return extractedData;
-//   }
-// }
+  constructor(private readonly pdfExtractionService: PdfExtractionService) {
+   
+  }
 
-@Post('extract-text')
-@UseInterceptors(FileInterceptor('file'))
-async extractText(@UploadedFile() file): Promise<string> {
-  return this.pdfExtractionService.extractTextFromPdf(file.buffer);
+
+
+
+//! SIGN-UP
+@Post('sign-up')
+  async signUp(@Body() body: any): Promise<any> {
+    return await this.pdfExtractionService.signUp(body);
+  
 }
 
 
+//! LOGIN
+@Post('login') 
+  async login(@Body() body: any): Promise<any> {
+    try {
+      const user = await this.pdfExtractionService.login(body.email, body.password);
+
+      if (user) {
+        return user;
+      } else {
+        throw new Error('Authentication failed. Invalid credentials.');
+      }
+    } catch (error) {
+      console.error('Error during login:', error.message);
+      throw new Error('Login failed.');
+    }
+  }
+
 
 //! Using this Apis
-  @Post('extract-texts')
+@Post('extract-texts')
   @UseInterceptors(FilesInterceptor('files'))
   async extractTexts(
     @UploadedFiles() files,
-  ): Promise<{ filename: string; text: string }[]> {
+  ): Promise<{ filename: string; text: string; s3Url: string }[]> {
 
-    
-    // console.log(files);
-    
+console.log(files);
+
+
     const extractedData = await Promise.all(
-      files.map(async (file) => ({
-        filename: file.originalname,
-        text: await this.pdfExtractionService.extractTextFromPdf(file.buffer),
-      })),
+      files.map(async (file) => {
+        // Generate a unique key for the S3 object
+        const key = `ai/${Date.now()}-${file.originalname}`;
+
+        // Extract text from the PDF file
+        const text = await this.pdfExtractionService.extractTextFromPdf(file.buffer, file.originalname);
+
+        // Upload the file to S3 using the generated key
+        const s3UploadResponse: ManagedUpload.SendData = await this.pdfExtractionService.uploadToS3(
+          file.buffer,
+          key,
+        );
+console.log(file.originalname);
+
+        return {
+          filename: file.originalname,
+          text,
+          s3Url: s3UploadResponse.Location, // Store the S3 URL in the response
+        };
+      }),
     );
     return extractedData;
   }
 
-@Post('extract-text-name')
-@UseInterceptors(FileInterceptor('file'))
-async extractTextAndRespond(@UploadedFile() file): Promise<{ name: string; skills: Array<string> }> {
-  // Extract text from the PDF
-  const text = await this.pdfExtractionService.extractTextFromPdf(file.buffer);
 
-  // Split the text into lines
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line);
 
-  // The first non-empty line is assumed to be the name (this might not be accurate for all resumes)
-  const name = lines[0];
 
-  // Extract skills (this is a basic approach and might need refinement)
-  const skillsSection = text.split('Skills')[1] || '';
-  const skills = skillsSection.split('\n').map(skill => skill.trim()).filter(skill => skill);
 
-  return {
-      name: name,
-      skills: skills
-  };
+
+//!- list of emails
+@Get('fetch-emails')
+async fetchEmails(): Promise<any> {
+  
+    return  await this.pdfExtractionService.fetchEmails();
+  
 }
 
-
 //! final apis
-@Post('evaluate-response')
+@Post('generate-score')
 async testResponse(@Query('email')email:string): Promise<any> {
 console.log(email);
 
@@ -98,22 +110,25 @@ console.log(email);
 
 }
 
-// @Post('generate-score')
-// async generateScore(): Promise<any> {
-
-//   return  await this.pdfExtractionService.gptReview();
-
-// }
-
-
-
-//!-send this apis
-@Get('fetch-emails')
-async fetchEmails(): Promise<any> {
-  
-    return  await this.pdfExtractionService.fetchEmails();
-  
+@Get('list-scores')
+async listOfDataScores(){
+  return await this.pdfExtractionService.listOfDataScores()
 }
+
+
+
+
+@Get('list-S3')
+async fetchS3Link(){
+  return await this.pdfExtractionService.fetchS3Link()
+}
+
+
+@Delete('delete-user-score')
+async deleteScoreData(@Query('email')email:string){
+  return await this.pdfExtractionService.deleteScoreData(email)
+}
+
 
 
 @Get('health-check')
@@ -125,19 +140,9 @@ async testMyApi(): Promise<any> {
 
 
 
-
-@Post('sign-up')
-  async signUp(@Body() body: any): Promise<any> {
-    return await this.pdfExtractionService.signUp(body);
-  
 }
 
 
 
 
 
-
-
-
-
-}
